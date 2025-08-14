@@ -16,6 +16,7 @@ phases:
       - docker push 346701285224.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app-repo:latest
       - echo "Updating Kubernetes deployment..."
       - aws eks update-kubeconfig --name my-cluster --region ap-south-1
+      - kubectl get nodes
       - kubectl apply -f deployment.yaml
       - kubectl apply -f service.yaml
       - kubectl rollout status deployment/brain-tasks-app  # corrected the deployment name
