@@ -3,24 +3,39 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - echo "Logging in to Amazon ECR..."
-      - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 346701285224.dkr.ecr.ap-south-1.amazonaws.com
+      # Install kubectl (latest stable version)
+      - curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+      - chmod +x kubectl && mv kubectl /usr/local/bin/
+      
+      # Configure AWS CLI
+      - aws configure set region ap-south-1
+      
+      # ECR Login
+      - aws ecr get-login-password | docker login --username AWS --password-stdin 346701285224.dkr.ecr.ap-south-1.amazonaws.com
+
   build:
     commands:
-      - echo "Building Docker image..."
       - docker build -t brain-tasks-app .
       - docker tag brain-tasks-app:latest 346701285224.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app-repo:latest
+
   post_build:
     commands:
-      - echo "Pushing Docker image to ECR..."
+      # Push to ECR
       - docker push 346701285224.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app-repo:latest
-      - echo "Configuring EKS access..."
-      - aws eks update-kubeconfig --name my-cluster --region ap-south-1
+      
+      # EKS Authentication
+      - aws sts get-caller-identity
+      - aws eks update-kubeconfig --name my-cluster --region ap-south-1 --role-arn arn:aws:iam::346701285224:role/codebuild-my-app-codebuild-service-role
+      - kubectl config view --minify
       - kubectl config current-context
+      
+      # Verify Access
       - kubectl get nodes
-      - echo "Deploying to EKS..."
+      
+      # Deploy
       - kubectl apply -f deployment.yaml
-      - kubectl rollout status deployment/brain-tasks-app-deployment
+      - kubectl rollout status deployment/brain-tasks-app-deployment --timeout=300s
+      - kubectl get svc brain-tasks-app-service
 
 artifacts:
   files:
