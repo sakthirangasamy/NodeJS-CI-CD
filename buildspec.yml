@@ -14,12 +14,13 @@ phases:
     commands:
       - echo "Pushing Docker image to ECR..."
       - docker push 346701285224.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app-repo:latest
-      - echo "Updating Kubernetes deployment..."
+      - echo "Configuring EKS access..."
       - aws eks update-kubeconfig --name my-cluster --region ap-south-1
+      - kubectl config current-context
       - kubectl get nodes
+      - echo "Deploying to EKS..."
       - kubectl apply -f deployment.yaml
-      - kubectl apply -f service.yaml
-      - kubectl rollout status deployment/brain-tasks-app  # corrected the deployment name
+      - kubectl rollout status deployment/brain-tasks-app-deployment
 
 artifacts:
   files:
