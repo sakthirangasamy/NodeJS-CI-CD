@@ -28,7 +28,7 @@ phases:
       - export KUBECONFIG=/root/.kube/config
       - kubectl apply -f deployment.yaml
       - kubectl apply -f service.yaml
-      - kubectl rollout status deployment/brain-tasks-app-deployment
+      - kubectl rollout status deployment/brain-tasks-app
 
 artifacts:
   files:
