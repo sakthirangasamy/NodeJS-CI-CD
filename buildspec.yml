@@ -20,25 +20,25 @@ phases:
       - docker build -t brain-tasks-app .
       - docker tag brain-tasks-app:latest 346701285224.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app-repo:latest
 
-  post_build:
-    commands:
-      - echo "Pushing image to ECR..."
-      - docker push 346701285224.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app-repo:latest
+post_build:
+  commands:
+    - echo "Pushing image to ECR..."
+    - docker push 346701285224.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app-repo:latest
 
-      - echo "Updating kubeconfig for EKS..."
-      - aws eks update-kubeconfig --name my-cluster --region ap-south-1 --kubeconfig /root/.kube/config
-      - export KUBECONFIG=/root/.kube/config
+    - echo "Updating kubeconfig for EKS..."
+    - aws eks update-kubeconfig --name my-cluster --region ap-south-1 --kubeconfig /root/.kube/config
+    - export KUBECONFIG=/root/.kube/config
 
-      - echo "Applying Kubernetes manifests..."
-      - kubectl apply -f deployment.yaml
-      - kubectl apply -f service.yaml
-      - kubectl rollout status deployment/brain-tasks-app
+    - echo "Applying Kubernetes manifests..."
+    - kubectl apply -f deployment.yaml
+    - kubectl apply -f service.yaml
+    - kubectl rollout status deployment/brain-tasks-app
 
-      - echo "Fetching LoadBalancer External URL..."
-      - >
-        LOAD_BALANCER=$(kubectl get svc brain-tasks-service 
-        -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-      - echo "App deployed at: http://$LOAD_BALANCER"
+    - echo "Fetching LoadBalancer External URL..."
+    - |
+      LOAD_BALANCER=$(kubectl get svc brain-tasks-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+      echo "App deployed at: http://$LOAD_BALANCER"
+
 
 artifacts:
   files:
