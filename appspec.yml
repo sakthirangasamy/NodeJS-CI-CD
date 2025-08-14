@@ -1,0 +1,8 @@
+version: 0.0
+Resources:
+  - myEKSApp:
+      Type: AWS::EKS::Application
+      Properties:
+        Service: brain-tasks-service
+        ClusterName: my-cluster
+        File: deployment.yaml
