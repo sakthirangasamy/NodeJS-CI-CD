@@ -23,8 +23,11 @@ phases:
   post_build:
     commands:
       - docker push 346701285224.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app-repo:latest
-      - aws eks update-kubeconfig --name my-cluster --region ap-south-1
+      - echo "Updating kubeconfig for EKS..."
+      - aws eks update-kubeconfig --name my-cluster --region ap-south-1 --kubeconfig /root/.kube/config
+      - export KUBECONFIG=/root/.kube/config
       - kubectl apply -f deployment.yaml
+      - kubectl apply -f service.yaml
       - kubectl rollout status deployment/brain-tasks-app-deployment
 
 artifacts:
