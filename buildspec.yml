@@ -3,17 +3,23 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - echo Logging in to Amazon ECR...
+      - echo "Logging in to Amazon ECR..."
       - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 346701285224.dkr.ecr.ap-south-1.amazonaws.com
   build:
     commands:
-      - echo Building Docker image...
+      - echo "Building Docker image..."
       - docker build -t brain-tasks-app .
       - docker tag brain-tasks-app:latest 346701285224.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app-repo:latest
   post_build:
     commands:
-      - echo Pushing Docker image to ECR...
+      - echo "Pushing Docker image to ECR..."
       - docker push 346701285224.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app-repo:latest
+      - echo "Updating Kubernetes deployment..."
+      - aws eks update-kubeconfig --name your-eks-cluster-name --region ap-south-1
+      - kubectl apply -f deployment.yaml
+      - kubectl apply -f service.yaml
+      - kubectl rollout status deployment/brain-tasks-app-deployment  # Wait for rollout to complete
+
 artifacts:
   files:
     - appspec.yml
